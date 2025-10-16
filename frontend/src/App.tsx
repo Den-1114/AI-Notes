@@ -1,216 +1,153 @@
-import { useState, useRef } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
-import axios from 'axios'
-import FileDropZone from './components/FileUpload/FileDropZone'
-import FileList from './components/FileUpload/FileList'
-import UploadButton from './components/FileUpload/UploadButton'
-import SummaryPanel from './components/FileUpload/SummaryPanel'
-import { validateFile } from './components/FileUpload/helpers'
+// App.tsx
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  NavLink,
+} from 'react-router-dom'
+import type { ReactNode } from 'react'
+import Summary from './components/Summary/Summary'
+import Flashcards from './components/Flashcards/Flashcards'
 
 const API_BASE_URL = '127.0.0.1:5000'
 
-interface FileObject {
-  file: File
-  id: number
-  preview: string | null
+interface NavItem {
+  to: string
+  label: string
+  icon: ReactNode
 }
 
-interface UploadProgress {
-  [key: number]: number
-}
+// Define nav items
+const navItems: NavItem[] = [
+  {
+    to: '/summary',
+    label: 'Summary',
+    icon: (
+      <svg
+        className="w-5 h-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+      >
+        <path
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
+        />
+      </svg>
+    ),
+  },
+  {
+    to: '/flashcards',
+    label: 'Flashcards',
+    icon: (
+      <svg
+        className="w-5 h-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+      >
+        <path
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M13 2L3 14h7l-1 8L21 10h-7l-1-8z"
+        />
+      </svg>
+    ),
+  },
+  {
+    to: '/settings',
+    label: 'Settings',
+    icon: (
+      <svg
+        className="w-5 h-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+      >
+        <path
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"
+        />
+        <path
+          strokeWidth="1.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09c.66 0 1.25-.4 1.51-1a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06c.46.46 1.19.52 1.82.33.51-.16 1-.48 1-1.51V3a2 2 0 0 1 4 0v.09c0 1.03.49 1.35 1 1.51.63.19 1.36.13 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06c-.46.46-.52 1.19-.33 1.82.16.51.48 1 1.51 1H21a2 2 0 0 1 0 4h-.09c-1.03 0-1.35.49-1.51 1z"
+        />
+      </svg>
+    ),
+  },
+]
 
-interface Errors {
-  [key: string]: string
-}
-
-interface UploadResponse {
-  file_id: string
-  filename: string
-  saved_as: string
-  success: string
-}
-
-interface MultipleFilesResponse {
-  files: UploadResponse[]
-}
-
-function CompleteFileUpload() {
-  const [files, setFiles] = useState<FileObject[]>([])
-  const [dragging, setDragging] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress>({})
-  const [uploading, setUploading] = useState(false)
-  const [errors, setErrors] = useState<Errors>({})
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [multipleResponseMessage, setMultipleResponseMessage] =
-    useState<MultipleFilesResponse | null>(null)
-  const [summary, setSummary] = useState<string>('')
-
-  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-  const ALLOWED_TYPES = [
-    'application/pdf',
-    'text/plain',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  ]
-  const MAX_FILES = 1
-
-  const processFiles = (newFiles: FileList | File[]): void => {
-    const fileArray = Array.from(newFiles)
-    const validationErrors: Errors = {}
-    const validFiles: FileObject[] = []
-
-    if (files.length + fileArray.length > MAX_FILES) {
-      alert(`You can only upload up to ${MAX_FILES} files`)
-      return
-    }
-
-    fileArray.forEach((file, index) => {
-      const error = validateFile(file, MAX_FILE_SIZE, ALLOWED_TYPES)
-      if (error) {
-        validationErrors[file.name] = error
-      } else {
-        validFiles.push({
-          file,
-          id: Date.now() + index,
-          preview: file.type.startsWith('image/')
-            ? URL.createObjectURL(file)
-            : null,
-        })
-      }
-    })
-
-    setErrors(validationErrors)
-    setFiles((prev) => [...prev, ...validFiles])
-  }
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    if (e.target.files && e.target.files.length > 0) {
-      processFiles(e.target.files)
-    }
-  }
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (files.length === 0) {
-      alert('Please select at least one file')
-      return
-    }
-
-    setMultipleResponseMessage(null)
-    setUploading(true)
-    setErrors({})
-
-    for (const fileObj of files) {
-      const formData = new FormData()
-      formData.append('file', fileObj.file)
-
-      try {
-        // Upload
-        const response = await axios.post<UploadResponse>(
-          `http://${API_BASE_URL}/upload`,
-          formData,
-          {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            onUploadProgress: (progressEvent) => {
-              if (progressEvent.total) {
-                const percentComplete =
-                  (progressEvent.loaded / progressEvent.total) * 100
-                setUploadProgress((prev) => ({
-                  ...prev,
-                  [fileObj.id]: percentComplete,
-                }))
-              }
-            },
-          }
-        )
-
-        // Summary
-        const summaryResponse = await axios.get(
-          `http://${API_BASE_URL}/generate_summary/${response.data.saved_as}`
-        )
-        setSummary(summaryResponse.data.summary)
-
-        setMultipleResponseMessage((prev) => ({
-          files: prev?.files ? [...prev.files, response.data] : [response.data],
-        }))
-      } catch (error) {
-        console.error(`Error uploading ${fileObj.file.name}:`, error)
-        setErrors((prev) => ({
-          ...prev,
-          [fileObj.file.name]: 'Upload or summary generation failed',
-        }))
-      }
-    }
-
-    setUploading(false)
-  }
-
-  const removeFile = (id: number): void => {
-    setFiles((prev) => {
-      const fileToRemove = prev.find((f) => f.id === id)
-      if (fileToRemove?.preview) URL.revokeObjectURL(fileToRemove.preview)
-      return prev.filter((f) => f.id !== id)
-    })
-    setUploadProgress((prev) => {
-      const newProgress = { ...prev }
-      delete newProgress[id]
-      return newProgress
-    })
-  }
-
-  const clearAll = (): void => {
-    files.forEach((f) => f.preview && URL.revokeObjectURL(f.preview))
-    setFiles([])
-    setErrors({})
-    setUploadProgress({})
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
+// NavBar component
+function NavBar() {
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 py-10">
-      <div className="flex flex-col lg:flex-row justify-center gap-8 px-4 lg:px-16">
-        {/* Upload Panel */}
-        <div className="flex-1 max-w-lg bg-gray-800 rounded-lg shadow p-6">
-          <form onSubmit={handleSubmit}>
-            <FileDropZone
-              dragging={dragging}
-              setDragging={setDragging}
-              handleFileChange={handleFileChange}
-              processFiles={processFiles}
-              fileInputRef={fileInputRef}
-              uploading={uploading}
-              maxFiles={MAX_FILES}
-              maxFileSize={MAX_FILE_SIZE}
-              allowedTypes={ALLOWED_TYPES}
-            />
-
-            {/* Errors */}
-            {Object.keys(errors).length > 0 && (
-              <div className="bg-red-900 text-red-400 p-3 rounded mt-4">
-                {Object.values(errors).map((err, i) => (
-                  <p key={i} className="text-sm">
-                    ⚠️ {err}
-                  </p>
-                ))}
-              </div>
-            )}
-
-            <FileList
-              files={files}
-              uploadProgress={uploadProgress}
-              uploading={uploading}
-              removeFile={removeFile}
-              clearAll={clearAll}
-            />
-
-            <UploadButton files={files} uploading={uploading} />
-          </form>
-        </div>
-        {/* Summary Panel */}
-        {summary && <SummaryPanel summary={summary} />}
-      </div>
-    </div>
+    <nav
+      className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50
+                 bg-gray-800/80 backdrop-blur-md px-3 py-2 rounded-full shadow-lg
+                 flex items-center gap-2"
+      role="navigation"
+    >
+      {navItems.map(({ to, label, icon }) => (
+        <NavLink
+          key={to}
+          to={to}
+          end
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-full transition-transform transform
+             ${
+               isActive
+                 ? 'text-blue-400 scale-110'
+                 : 'text-gray-400 hover:text-white hover:scale-105'
+             }`
+          }
+          aria-label={label}
+          title={label}
+        >
+          {icon}
+          <span className="text-xs select-none">{label}</span>
+        </NavLink>
+      ))}
+    </nav>
   )
 }
 
-export default CompleteFileUpload
+// Define pages in an array for cleaner routing
+interface RouteItem {
+  path: string
+  element: JSX.Element
+}
+
+const routes: RouteItem[] = [
+  { path: '/', element: <Navigate to="/summary" replace /> },
+  { path: '/summary', element: <Summary API_BASE_URL={API_BASE_URL} /> },
+  { path: '/flashcards', element: <Flashcards API_BASE_URL={API_BASE_URL} /> },
+  {
+    path: '*',
+    element: <p className="text-center text-red-400 mt-10">Page not found</p>,
+  },
+]
+
+// App component
+function App() {
+  return (
+    <Router>
+      <Routes>
+        {routes.map(({ path, element }) => (
+          <Route key={path} path={path} element={element} />
+        ))}
+      </Routes>
+
+      {/* NavBar must be inside Router */}
+      <NavBar />
+    </Router>
+  )
+}
+
+export default App

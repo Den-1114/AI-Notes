@@ -8,7 +8,6 @@ interface FileObject {
 
 interface Props {
   files: FileObject[]
-  uploadProgress: { [key: number]: number }
   uploading: boolean
   removeFile: (id: number) => void
   clearAll: () => void
@@ -16,7 +15,7 @@ interface Props {
 
 function FileList({
   files,
-  uploadProgress,
+
   uploading,
   removeFile,
   clearAll,
@@ -44,7 +43,6 @@ function FileList({
           <FileItem
             key={fileObj.id}
             fileObj={fileObj}
-            progress={uploadProgress[fileObj.id]}
             uploading={uploading}
             removeFile={removeFile}
           />

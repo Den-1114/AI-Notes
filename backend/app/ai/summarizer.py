@@ -1,21 +1,22 @@
 from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
+from langchain_ollama import ChatOllama
 from langchain.chains import LLMChain
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.prompts import PromptTemplate
 import app.utils.helpers as tools
 from dotenv import load_dotenv
 import os
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 load_dotenv()
 
 # Initialize OpenRouter via ChatOpenAI (reused across calls)
-llm = ChatOpenAI(
-    model_name="deepseek/deepseek-chat-v3.1:free",
-    temperature=0.3,
-    openai_api_base="https://openrouter.ai/api/v1",
-    openai_api_key=os.environ.get("OPENROUTER_API_KEY"),
-)
+# llm = ChatOpenAI(
+#     model_name="moonshotai/kimi-k2:free",
+#     temperature=0.3,
+#     openai_api_base="https://openrouter.ai/api/v1",
+#     openai_api_key=os.environ.get("OPENROUTER_API_KEY"),
+# )
+
+llm = ChatOllama(model="gemma3:12b", temperature=0.3, base_url="http://localhost:11434")
 
 # Reusable prompt template
 SUMMARY_PROMPT = PromptTemplate(
@@ -49,44 +50,14 @@ DETAILED CHAPTER SUMMARY:
 """,
 )
 
-# Reuse chain for efficiency
+
 chain = LLMChain(llm=llm, prompt=SUMMARY_PROMPT)
 
 
-def summarize_chunk(chunk: str, idx: int, total: int) -> str:
-    """Helper function to summarize a single chunk"""
-    tools.debug_print([f"Summarizing chunk {idx}/{total}..."])
-    return chain.run({"text": chunk}).strip()
-
-
-def generate_chapter_summary(content: str, max_workers: int = 4) -> str:
-    """Generate a large, detailed summary of the chapter with threading"""
-
-    # 1️⃣ Split content into manageable chunks
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=12000,  # safe for context window
-        chunk_overlap=300,
-        separators=["\n\n", "\n", ".", " "],
-    )
-    chunks = splitter.split_text(content)
-    tools.debug_print([f"Text split into {len(chunks)} chunks."])
-
-    # 2️⃣ Run summarization in parallel
-    chunk_summaries = []
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = {
-            executor.submit(summarize_chunk, chunk, i + 1, len(chunks)): i
-            for i, chunk in enumerate(chunks)
-        }
-
-        for future in as_completed(futures):
-            try:
-                chunk_summaries.append(future.result())
-            except Exception as e:
-                tools.debug_print([f"Error in chunk {futures[future] + 1}: {e}"])
-
-    # 3️⃣ Combine chunk summaries into a final summary
-    tools.debug_print(["Combining chunk summaries..."])
-    combined_summary = "\n\n".join(chunk_summaries)
-
-    return combined_summary
+def summarize_text(text: str) -> str:
+    """Summarizes the input text using chunking and parallel processing"""
+    tools.debug_print([f"Summarizing..."])
+    tools.debug_print([f"Text length: {len(text)}"])
+    summary = chain.run({"text": text}).strip()
+    tools.debug_print([f"Summary length: {len(summary)}"])
+    return summary

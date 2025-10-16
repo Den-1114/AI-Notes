@@ -1,26 +1,24 @@
 interface Props {
   files: { file: File; id: number; preview: string | null }[]
-  uploading: boolean
+  state: boolean
+  text?: string
+  loadingText?: string
 }
 
-function UploadButton({ files, uploading }: Props) {
-  if (files.length === 0) return null
-
+function Button({ state, text, loadingText }: Props) {
   return (
     <button
       type="submit"
-      disabled={uploading}
+      disabled={state}
       className={`w-full py-3 mt-6 rounded font-medium text-white transition-colors ${
-        uploading
+        state
           ? 'bg-gray-600 cursor-not-allowed'
           : 'bg-blue-500 hover:bg-blue-600'
       }`}
     >
-      {uploading
-        ? 'Summarizing...'
-        : `Summarize ${files.length} file${files.length > 1 ? 's' : ''}`}
+      {state ? loadingText : text}
     </button>
   )
 }
 
-export default UploadButton
+export default Button

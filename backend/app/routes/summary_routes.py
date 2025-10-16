@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, current_app
 import os
 from app.utils.helpers import debug_print, error_print
 from app.utils.file_ops import extract_text_from_pdf, extract_text_from_docx
-from app.ai.summarizer import generate_chapter_summary
+from app.ai.summarizer import summarize_text
 
 summary_bp = Blueprint("summary_bp", __name__)
 
@@ -35,7 +35,7 @@ def generate_summary(filename: str):
             error_print(["Unsupported file format"])
             return jsonify({"error": "Unsupported file format"})
 
-        summary = generate_chapter_summary(file_content)
+        summary = summarize_text(file_content)
 
         os.makedirs(summary_folder, exist_ok=True)
         with open(

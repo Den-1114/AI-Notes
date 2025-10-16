@@ -58,3 +58,4 @@ uploads/
 frontend/package-lock.json
 token.env
 backend/.python-version
+data
