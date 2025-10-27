@@ -1,1 +1,76 @@
 @import 'tailwindcss';
+
+::-webkit-scrollbar {
+  width: 2px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--color-gray-800);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-600);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-gray-600);
+}
+
+.perspective {
+  perspective: 1000px;
+}
+
+html {
+  background-color: #111827; /* gray-900 */
+  color: #e5e7eb; /* gray-200 */
+  position: relative;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+html::before {
+  content: '';
+  position: fixed;
+  top: 20%;
+  left: 10%;
+  width: 600px;
+  height: 600px;
+  background: rgba(147, 51, 234, 0.15); /* purple-500/15 */
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: -1;
+}
+
+html::after {
+  content: '';
+  position: fixed;
+  bottom: 15%;
+  right: 10%;
+  width: 500px;
+  height: 500px;
+  background: rgba(29, 78, 216, 0.15); /* blue-700/15 */
+  border-radius: 50%;
+  filter: blur(130px);
+  z-index: -1;
+}
+
+@keyframes floatGlow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(25px);
+  }
+}
+
+/* Attach to Tailwind-style utility */
+.animate-floatGlow {
+  animation: floatGlow 1s ease-in-out infinite alternate;
+}
+
+html::before,
+html::after {
+  animation: floatGlow 10s ease-in-out infinite alternate;
+}

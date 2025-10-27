@@ -1,4 +1,5 @@
 import { formatFileSize } from '../helpers'
+import xIcon from '../../assets/x.svg'
 
 interface FileObject {
   file: File
@@ -15,15 +16,15 @@ interface Props {
 
 function FileItem({ fileObj, uploading, removeFile }: Props) {
   return (
-    <div className="border rounded p-3 bg-gray-700 flex items-center gap-3 shadow-sm">
+    <div className="border rounded-2xl p-3 bg-gray-700 flex items-center gap-3 shadow-sm">
       {fileObj.preview ? (
         <img
           src={fileObj.preview}
           alt={fileObj.file.name}
-          className="w-14 h-14 object-cover rounded"
+          className="w-14 h-14 object-cover rounded-2xl"
         />
       ) : (
-        <div className="w-14 h-14 flex items-center justify-center bg-gray-600 rounded text-2xl">
+        <div className="w-14 h-14 flex items-center justify-center bg-gray-600 rounded-2xl text-2xl">
           📄
         </div>
       )}
@@ -39,9 +40,9 @@ function FileItem({ fileObj, uploading, removeFile }: Props) {
         type="button"
         onClick={() => removeFile(fileObj.id)}
         disabled={uploading}
-        className="px-2 py-1 border rounded text-lg hover:bg-gray-600 disabled:opacity-50"
+        className="px-2 py-1 rounded-xl text-lg  disabled:opacity-50"
       >
-        ❌
+        <img src={xIcon} className="h-6 w-6" />
       </button>
     </div>
   )

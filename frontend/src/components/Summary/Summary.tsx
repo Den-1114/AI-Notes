@@ -144,10 +144,14 @@ function CompleteFileUpload({ API_BASE_URL }: { API_BASE_URL: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 py-10">
-      <div className="flex flex-col lg:flex-row justify-center gap-8 px-4 lg:px-16">
+    <div className="relative min-h-screen bg-gray-900 text-gray-200 py-10 overflow-hidden">
+      {/* Floating background glows with gentle motion */}
+      <div className="absolute top-20 left-1/4 w-[32rem] h-[32rem] bg-purple-700/10 blur-[120px] rounded-full animate-floatGlow"></div>
+      <div className="absolute bottom-10 right-1/4 w-[28rem] h-[28rem] bg-blue-700/10 blur-[130px] rounded-full animate-floatGlow"></div>
+
+      <div className="relative flex flex-col lg:flex-row justify-center gap-8 px-4 lg:px-16 z-10">
         {/* Upload Panel */}
-        <div className="flex-1 max-w-lg bg-gray-800 rounded-lg shadow p-6">
+        <div className="flex-1 max-w-lg bg-gray-800 rounded-2xl shadow p-6">
           <form onSubmit={handleSubmit}>
             <FileDropZone
               dragging={dragging}
@@ -187,6 +191,7 @@ function CompleteFileUpload({ API_BASE_URL }: { API_BASE_URL: string }) {
             />
           </form>
         </div>
+
         {/* Summary Panel */}
         <SummaryPanel summary={summary} />
       </div>

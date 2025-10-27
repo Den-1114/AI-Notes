@@ -31,7 +31,7 @@ Rules:
 1. Each flashcard must include:
    - "question": short question (max 12 words)
    - "answer": short answer (max 10 words)
-2. Generate **at most 10 flashcards** per input text.
+2. Generate **exactly 20 flashcards** per input text.
 3. Use the same language as the input text.
 4. Keep it beginner-friendly and easy to review.
 5. Focus on facts, names, dates, and key ideas.

@@ -23,7 +23,7 @@ const MarkdownVisualizer: React.FC<MarkdownVisualizerProps> = ({
 
   return (
     <div
-      className="markdown-body prose max-w-full overflow-y-auto p-4 bg-white rounded shadow"
+      className="markdown-body prose max-w-full overflow-y-auto p-4 bg-white rounded-2xl shadow"
       style={{ maxHeight: '80vh' }}
       dangerouslySetInnerHTML={{ __html: renderedHTML }}
     />

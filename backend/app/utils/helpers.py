@@ -16,3 +16,9 @@ def generate_uid() -> str:
 
 def allowed_file(filename: str, allowed_extensions: set) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed_extensions
+
+
+def generate_hash(data: str) -> str:
+    import hashlib
+
+    return hashlib.sha256(data.encode()).hexdigest()

@@ -32,7 +32,7 @@ function FileList({
           type="button"
           onClick={clearAll}
           disabled={uploading}
-          className="px-3 py-1 text-sm border rounded hover:bg-gray-700 disabled:opacity-50"
+          className="px-3 py-1 text-sm border rounded-xl hover:bg-gray-700 disabled:opacity-50"
         >
           Clear All
         </button>

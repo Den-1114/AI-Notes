@@ -52,7 +52,7 @@ function FileDropZone({
       onDragLeave={handleDragOut}
       onDragOver={handleDrag}
       onDrop={handleDrop}
-      className={`border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-colors ${
+      className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-colors ${
         dragging ? 'border-blue-400 bg-blue-900' : 'border-gray-600 bg-gray-800'
       }`}
       onClick={() => fileInputRef.current?.click()}

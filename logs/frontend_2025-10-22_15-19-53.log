@@ -1,0 +1,12 @@
+[Frontend] Starting at Wed Oct 22 15:19:53 +03 2025
+
+> frontend@0.0.0 dev
+> vite
+
+
+  VITE v7.1.9  ready in 247 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://10.255.255.254:5173/
+  ➜  Network: http://172.31.199.142:5173/
+  ➜  Network: http://100.82.170.22:5173/
